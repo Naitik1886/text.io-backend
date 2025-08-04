@@ -100,7 +100,12 @@ async function login(req, res) {
 
 async function logout(req, res) {
   try {
-    res.cookie("token", "", { maxAge: 0 });
+    res.cookie("token", "", {
+      maxAge: 0,
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+    });
     res.json({ message: "Logout successful" });
   } catch (error) {
     console.log(error);
