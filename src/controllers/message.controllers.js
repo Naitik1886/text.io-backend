@@ -47,20 +47,24 @@ async function sendMessage(req, res) {
       imageurl = upload.secure_url;
     }
 
-    const newMesseage = await Message.create({
+    const newMessage = await Message.create({
       text,
       image: imageurl,
       senderId: myId,
       receiverId: userToChatId,
     });
 
-    const {io} = req;
+    const { io } = req;
 
+    // Step 1: Send the message in real-time IF the receiver is online
     const receiverSocketId = getReceiverSocketId(userToChatId);
     if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessages", newMesseage);
-      return res.json(newMesseage);
+      io.to(receiverSocketId).emit("newMessages", newMessage);
     }
+
+    // Step 2: ALWAYS send a success confirmation back to the sender
+    return res.status(201).json(newMessage);
+
   } catch (error) {
     console.error("Error sending message:", error);
     return res.status(500).json({ message: "Internal server error" });
